@@ -68,7 +68,7 @@ void main(void)
 			count++;
 		}
 
-		rewind(stdin);
+		rewind(stdin); // Visual Studio 2015
 		printf("게임을 계속하시겠습니다(y/n)?");
 		scanf("%c", &yesno);
 		if (yesno == 'N' || yesno == 'n') break;
