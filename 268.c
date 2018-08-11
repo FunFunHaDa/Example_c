@@ -3,7 +3,7 @@
 #include<stdio.h>	// printf, puts, fopen, fclose, getchar
 #include<malloc.h>	// malloc, free
 #include<string.h>	// strcpy, strstr
-#include<conio.h>	// getch
+#include<conio.h>	// getch, 엔터를 치지 않고 한 개의 무자 입력 받음
 
 #define ADDRFILE "addrlist.txt"
 
@@ -19,7 +19,7 @@ typedef struct tagLinkedList
 
 ADDR *g_pAddrHead = NULL;
 ADDR *g_pFind;
-int g_bSaved = 1;
+int g_bSaved = 1;	// 등록/수정/삭제 시 값이 0이됨, 0일 때 종료하면 모든 주소 데이터를 변경할 것인지 묻는다.
 
 void get_addrlist(void);
 int add_list(const ADDR *addr);
@@ -27,7 +27,7 @@ int find_list(const char *name);
 void SetHeadPosition(void);
 void SetTailPosition(void);
 
-void Addr_addr(void);
+void Add_addr(void);
 void Find_addr(void);
 void Modify_addr(void);
 
@@ -46,13 +46,13 @@ void main(void)
 
 	while (1)
 	{
-		printf("\n[1]등록[2]검색[3]수정[4]삭제[5]출력[S]저장[Q]종료 ");
+		printf("\n[1]등록 [2]검색 [3]수정 [4]삭제 [5]출력 [S]저장 [Q]종료 ");
 		
-		ch = getch();
+		ch = getch();	// 엔터 없이 문자를 받는다.
 
 		switch (ch)
 		{
-		case '1': Add_adr(); break;
+		case '1': Add_addr(); break;
 		case '2': Find_addr(); break;
 		case '3': Modify_addr(); break;
 		case '4': Delete_addr(); break;
@@ -61,7 +61,7 @@ void main(void)
 		case 'S': Save_addr(); break;
 		case 'q':
 		case 'Q':
-			if (g_bSaved == 0)
+			if (g_bSaved == 0)	// 주소 데이터 변경 시 변경 여부를 묻는다.
 			{
 				printf("\n\n변경된 주소 데이터를 저장하시겠습니까(y/n)?");
 				ch = getchar();
@@ -73,12 +73,13 @@ void main(void)
 	}
 }
 
+// 파일로부터 주소 데이터를 이중 링크드 리스트에 읽어들입니다.
 void get_addrlist(void)
 {
 	ADDR addr;
 	FILE *fp;
 
-	fp = open(ADDRFILE, "rb");
+	fp = fopen(ADDRFILE, "rb");
 
 	if (fp == NULL)
 	{
@@ -107,11 +108,13 @@ void get_addrlist(void)
 	fclose(fp);
 }
 
+// 주소 데이터 하나를 이중 링크드 리스트에 추가합니다.
 int add_list(const ADDR *addr)
 {
 	ADDR *plocal, *pn = g_pAddrHead;
 	SetHeadPosition();
 
+	// g_pAddrHead가 초기화 되지 않은 경우, 한 번만 실행
 	if (g_pAddrHead == NULL)
 	{
 		plocal = malloc(sizeof(ADDR)); // ADDR 구조체 할당
@@ -123,12 +126,12 @@ int add_list(const ADDR *addr)
 		}
 
 		g_pAddrHead = plocal;
-		g_pAddrHead->prev = NULL;
-		g_pAddrHead->next = NULL;
+		g_pAddrHead->prev = NULL;	// 처음에는 NULL로 초기화
+		g_pAddrHead->next = NULL;	// 처음에는 NULL로 초기화
 	}
-	else
+	else	// g_pAddrHead가 초기화 된 후 계속 실행
 	{
-		plocal = malloc(sizeof(ADDR));
+		plocal = malloc(sizeof(ADDR));	// ADDR 구조체 할당
 		memset(plocal, 0, sizeof(ADDR));
 
 		if (plocal == NULL)
@@ -141,9 +144,9 @@ int add_list(const ADDR *addr)
 			pn = pn->next;
 		}
 
-		pn->next = plocal;
-		plocal->prev = pn;
-		plocal->next = NULL;
+		pn->next = plocal;	// 다음 리스트를 지정
+		plocal->prev = pn;	// 이전 리스트를 지정
+		plocal->next = NULL;	// 다음 리스트를 NULL로 지정
 	}
 
 	strcpy(plocal->name, addr->name);
@@ -153,6 +156,7 @@ int add_list(const ADDR *addr)
 	return 1;
 }
 
+// g_pAddrHead를 첫 번째 주소 데이터를 가리키도록 지정합니다.
 void SetHeadPosition(void)
 {
 	if (g_pAddrHead == NULL) return;
@@ -163,6 +167,7 @@ void SetHeadPosition(void)
 	}
 }
 
+// g_pAddrHead를 마지막 주소 데이터를 가리키도록 지정
 void SetTailPosition(void)
 {
 	if (g_pAddrHead == NULL) return;
@@ -173,11 +178,12 @@ void SetTailPosition(void)
 	}
 }
 
+// 주어진 이름이 주소록에 있는지 검색
 int find_list(const char *name)
 {
 	ADDR *plocal;
 
-	SetHeadPosition();
+	SetHeadPosition();	// g_pAddrHead를 첫 주소 데이터를 가리키도록 지정
 
 	plocal = g_pAddrHead;
 
@@ -193,17 +199,18 @@ int find_list(const char *name)
 	return 0;
 }
 
-void Addr_addr(void)
+// 한 명의 주조를 입력받아 주소록에 추가
+void Add_addr(void)
 {
 	ADDR addr;
 
 	memset(&addr, 0, sizeof(ADDR));
-	printf("\n\n등록할 이름:"); gets(addr.name);
+	printf("\n\n등록할 이름: "); gets(addr.name);
 
 	if (strlen(addr.name) == 0) return;
 
-	printf("등록할 전화:"); gets(addr.tel);
-	printf("등록할 주소:"); gets(addr.addr);
+	printf("등록할 전화: "); gets(addr.tel);
+	printf("등록할 주소: "); gets(addr.addr);
 
 	if (find_list(addr.name) == 1)
 	{
@@ -214,7 +221,7 @@ void Addr_addr(void)
 		return;
 	}
 
-	if (addr_list(&addr))
+	if (add_list(&addr))
 	{
 		g_bSaved = 0;
 		printf("\n등록되었습니다. \n\n");
@@ -225,6 +232,7 @@ void Addr_addr(void)
 	}
 }
 
+// 이름/전화/주소를 검색하여 한 화면에 보여줍니다.
 void Find_addr(void)
 {
 	char buff[100] = { 0, };
@@ -275,6 +283,7 @@ void Find_addr(void)
 	}
 }
 
+// 검색된 주소 데이터를 재입력받아 모두 수정
 void Modify_addr(void)
 {
 	char name[100] = { 0, };
@@ -311,6 +320,158 @@ void Modify_addr(void)
 	strcpy(g_pFind->tel, addr.tel);
 	strcpy(g_pFind->addr, addr.addr);
 
-////////////////////////////////////////////////////////// concentration
+	g_bSaved = 0;
+	printf("%s에 대한 주소 데이터를 수정하였습니다. \n", name);
+}
 
+// 주소록에서 선택된 이름이 있는 주소 데이터를 삭제
+void Delete_addr(void)
+{
+	char name[100] = { 0, };
+	ADDR *plocal;
+	int ch;
+
+	while (1)
+	{
+		printf("\n\n삭제할 이름:"); gets(name);
+
+		if (strlen(name) == 0) return;
+
+		if (find_list(name) == 0)
+		{
+			puts("삭제할 이름을 찾을 수 없습니다.");
+			continue;
+		}
+		break;
+	}
+
+	puts(g_pFind->name);
+	puts(g_pFind->tel);
+	puts(g_pFind->addr);
+
+	printf("%s를 삭제하시겠습니까(y/n)? ", name);
+	ch = getch();
+	rewind(stdin);		///
+
+	if (ch == 'Y' || ch == 'y')
+	{
+		if (g_pFind->prev == NULL)	// 이전 데이터가 없는 경우
+		{
+			if (g_pFind->next == NULL)	// 다음 데이터도 없는 경우
+			{
+				free(g_pFind);
+				g_pAddrHead = NULL;
+			}
+			else
+			{
+				plocal = g_pFind->next;
+				free(g_pFind);
+				plocal->prev = NULL;
+				g_pAddrHead = plocal;
+			}
+		}
+		else if(g_pFind->next == NULL)	// 다음 데이터가 없는 경우
+		{
+			plocal = g_pFind->prev;
+			free(g_pFind);
+			plocal->next = NULL;
+			g_pAddrHead = plocal;
+		}
+		else	// 이전과 다음 데이터가 모두 있는 경우
+		{
+			plocal = g_pFind->prev;
+			plocal->next = g_pFind->next;
+
+			plocal = g_pFind->next;
+			plocal->prev = g_pFind->prev;
+
+			free(g_pFind);
+			g_pAddrHead = plocal;
+		}
+
+		g_bSaved = 0;
+
+		printf("\n\n검색된 주소 데이터를 삭제하였습니다.\n\n");
+	}
+}
+
+// 모든 주소 데이터를 출력
+void Print_addr(void)
+{
+	int count = 1;
+	ADDR *plocal;
+
+	SetHeadPosition();
+	plocal = g_pAddrHead;
+
+	// plocal 리스트의 맨 처음으로 이동
+	while (plocal->prev)
+	{
+		plocal = plocal->prev;
+	}
+
+	printf("\n\n");
+
+	// 한 개씩 출력
+	while (plocal)
+	{
+		printf("번호.%d \n", count++);
+		puts(plocal->name);
+		puts(plocal->tel);
+		printf("%s \n\n", plocal->addr);
+
+		printf("아무키나 누르세요, (중지:q) \n\n");
+		if (getch() == 'q') return;
+
+		plocal = plocal->next;
+	}
+}
+
+// 이중 링크드 리스트에 있는 모든 주소 데이터를 파일에 저장
+void Save_addr(void)
+{
+	ADDR *plocal;
+	FILE *fp;
+
+	if (g_pAddrHead == NULL) return;
+
+	fp = fopen(ADDRFILE, "w+b");
+
+	if (fp == NULL)
+	{
+		perror("파일 개방 에러");
+		return;
+	}
+
+	SetHeadPosition();
+
+	// 한 개씩 메모리 해제
+	while (g_pAddrHead)
+	{
+		plocal = g_pAddrHead->next;
+		fwrite(g_pAddrHead, sizeof(ADDR), 1, fp);
+		g_pAddrHead = plocal;
+	}
+
+	printf("\n모든 데이터를 파일에 저장하였습니다.");
+	g_bSaved = 1;
+
+	fclose(fp);
+}
+
+// 이중 링크드 리스트에 할당된 모든 메모리를 해제
+void Remove_addr(void)
+{
+	ADDR * plocal;
+	if (g_pAddrHead == NULL) return;
+	SetHeadPosition();
+
+	// 한개의 메모리 해제
+	while (g_pAddrHead)
+	{
+		plocal = g_pAddrHead->next;
+		free(g_pAddrHead);
+		g_pAddrHead = plocal;
+	}
+	g_pAddrHead = NULL; // 재사용을 하기 위한 초기화
 }
