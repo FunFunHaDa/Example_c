@@ -4,4 +4,4 @@ Example referenced in http://www.infopub.co.kr/bookinfo/bookinfo.asp?sku=0600023
  At least 50 minutes per day   
 
 Before : https://github.com/FunFunHaDa/YangC0  
-Next : ?
+Next : https://github.com/FunFunHaDa/Example_Data_Structure
